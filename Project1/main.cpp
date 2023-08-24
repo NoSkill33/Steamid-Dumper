@@ -41,6 +41,7 @@ bool isProfileAvailable(const std::string& profileId) {
 
 int lenght;
 std::string name;
+std::string profileId;
 
 std::string generateRandomProfileId() {
     static const char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
@@ -73,15 +74,25 @@ int main() {
         Sleep(5000);
         return 0;
     }
-    std::cout << termcolor::white << "[" << termcolor::yellow << "?" << termcolor::white << "] Target id to dump: ";
+    std::cout << termcolor::white << "[" << termcolor::yellow << "?" << termcolor::white << "] Target id to dump (use !ig to ignore): ";
     std::cin >> name;
     std::cout << termcolor::white << "[" << termcolor::yellow << "?" << termcolor::white << "] Additional lenght of target id: ";
     std::cin >> lenght;
 
-    uncheckedFile << "Mathemacy steamid dumper, ©NoSKill 2023\nTarget id: " << name << "\n\n[Valid / Scanned] ID" << std::endl;
-
+    if (name != "!ig")
+        uncheckedFile << "Mathemacy steamid dumper, ©NoSKill 2023\nTarget id: " << name << " + " << lenght << "\n\n[Valid / Scanned] ID" << std::endl;
+    else
+        uncheckedFile << "Mathemacy steamid dumper, ©NoSKill 2023\nTarget id: " << lenght << "\n\n[Valid / Scanned] ID" << std::endl;
+    
     while (true) {
-        std::string profileId = name + generateRandomProfileId();
+
+        if (name != "!ig") {
+            profileId = name + generateRandomProfileId();
+        }
+        else {
+            profileId = generateRandomProfileId();
+        }
+        //std::string profileId = name + generateRandomProfileId();
         przeskanowane++;
         uncheckedFile.flush();
         if (isProfileAvailable(profileId)) {
