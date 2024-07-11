@@ -4,9 +4,6 @@
 #include <string>
 #include <ctime>
 #include <cstdlib>
-
-#include "curl.h"
-
 #include "termcolor.h"
 
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
@@ -14,22 +11,27 @@ size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
     return size * nmemb;
 }
 
+#include <WinINet.h>
+#pragma comment(lib, "Wininet.lib")
+
 bool isProfileAvailable(const std::string& profileId) {
     std::string url = "https://steamcommunity.com/id/" + profileId;
 
-    CURL* curl = curl_easy_init();
-    if (curl) {
-        std::string response;
+    HINTERNET hInternet = InternetOpenA("HTTPGET", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+    if (hInternet) {
+        HINTERNET hConnect = InternetOpenUrlA(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
+        if (hConnect) {
+            char buf[1024];
+            DWORD bytesRead = 0;
+            std::string response;
 
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+            while (InternetReadFile(hConnect, buf, sizeof(buf), &bytesRead) && bytesRead > 0) {
+                response.append(buf, bytesRead);
+            }
 
-        CURLcode res = curl_easy_perform(curl);
+            InternetCloseHandle(hConnect);
+            InternetCloseHandle(hInternet);
 
-        curl_easy_cleanup(curl);
-
-        if (res == CURLE_OK) {
             if (response.find("The specified profile could not be found.") != std::string::npos) {
                 return true;
             }
@@ -44,7 +46,7 @@ std::string name;
 std::string profileId;
 
 std::string generateRandomProfileId() {
-    static const char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
+    static const char alphabet[] = "abcdefghijklmnopqrstuvwxyz1234567890";
     std::string profileId = "";
 
     for (int i = 0; i < lenght; ++i) {
